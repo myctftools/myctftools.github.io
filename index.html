@@ -265,7 +265,7 @@ msfconsole -x 'setg RHOST=IP; setg RHOSTS=IP'
   function copyer(element){
     try {
     //const element = document.querySelector(".user-select-all");
-    await navigator.clipboard.writeText(element.textContent);
+    navigator.clipboard.writeText(element.textContent);
     // Optional: Provide feedback or perform additional actions upon successful copy
   } catch (error) {
     console.error("Failed to copy to clipboard:", error);
