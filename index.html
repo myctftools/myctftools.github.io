@@ -62,7 +62,7 @@ dirb http://IP/ /usr/share/seclists/Discovery/Web-Content/directory-list-2.3-big
 curl http://IP/
 gobuster dir -u IP -w /usr/share/seclists/Discovery/Web-Content/directory-list-2.3-big.txt
 gobuster dir -u IP -w /usr/share/seclists/Discovery/Web-Content/raft-large-words.txt
-gobuster vhost -u DOMAIN.local -w /usr/share/seclists/oiscovery/web-content/combined_words .txt -length 347 —append-domain
+gobuster vhost -u DOMAIN.local -w /usr/share/seclists/Discovery/web-content/combined_words .txt -length 347 —append-domain
 
 
 smtp-user-enum -M VRFY -U /usr/share/seclists/Usernames/Names/names.txt -t IP
